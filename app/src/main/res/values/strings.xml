@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Kiosk</string>
+
+    <string name="url_default">http://dev.teaconcepts.net/CleverQMS</string>
+    <string name="ui_default">kiosk-standard</string>
+</resources>

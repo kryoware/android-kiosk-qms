@@ -1,8 +1,12 @@
 package com.example.kiosk;
 
+import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -10,14 +14,41 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import net.posprinter.posprinterface.IMyBinder;
+import net.posprinter.posprinterface.UiExecute;
+import net.posprinter.service.PosprinterService;
+import net.posprinter.utils.PosPrinterDev;
+
+import java.util.List;
 
 import io.sentry.Sentry;
 import io.sentry.android.AndroidSentryClientFactory;
 
 public class MainActivity extends AppCompatActivity {
+    public static IMyBinder binder;
+    public static PosPrinterDev.PortType portType;//connect type
+    static boolean isPrinterConnected = false;
+    ServiceConnection conn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            binder = (IMyBinder) iBinder;
+            Log.e("binder", "connected");
+            UsbPrinterConnect();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            Log.e("binder", "disconnected");
+        }
+    };
     private String URL;
     private SharedPreferences sharedPreferences;
     private WebView mWebView;
@@ -26,6 +57,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent intent = new Intent(this, PosprinterService.class);
+        bindService(intent, conn, BIND_AUTO_CREATE);
+
+        Button mButton = new Button(getApplicationContext());
+        mButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
 
         initialize();
 
@@ -57,11 +99,58 @@ public class MainActivity extends AppCompatActivity {
         setUpWebView();
     }
 
-    private boolean getIsFirstStart() {
-        boolean test = sharedPreferences.getBoolean("isFirstStart", true);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            binder.disconnectCurrentPort(new UiExecute() {
+                @Override
+                public void onsucess() {
 
-        Log.w("checkConfig", "" + test);
-        return test;
+                }
+
+                @Override
+                public void onfailed() {
+
+                }
+            });
+            unbindService(conn);
+        } catch (Exception e) {
+            Sentry.capture(e);
+        }
+    }
+
+    private void setPortType(PosPrinterDev.PortType portType) {
+        this.portType = portType;
+    }
+
+    public void UsbPrinterConnect() {
+        List<String> usbList = PosPrinterDev.GetUsbPathNames(getApplicationContext());
+
+        if (usbList != null) {
+            String usbDevice = usbList.get(0);
+
+            try {
+                binder.connectUsbPort(getApplicationContext(), usbDevice, new UiExecute() {
+                    @Override
+                    public void onsucess() {
+                        isPrinterConnected = true;
+                        setPortType(PosPrinterDev.PortType.USB);
+                    }
+
+                    @Override
+                    public void onfailed() {
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+        }
+    }
+
+    private boolean getIsFirstStart() {
+        return sharedPreferences.getBoolean("isFirstStart", true);
     }
 
     private void setUpWebView() {
@@ -80,9 +169,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Inject Bridge
         mWebView.addJavascriptInterface(new JSBridge(this, mWebView), "JSBridgePlugin");
-//        mWebView.evaluateJavascript();
-
-        Log.e("PREFS", "URL: " + URL);
         mWebView.loadUrl(URL);
     }
 

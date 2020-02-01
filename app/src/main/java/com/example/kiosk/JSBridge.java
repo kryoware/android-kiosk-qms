@@ -1,16 +1,23 @@
 package com.example.kiosk;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
-import android.widget.Toast;
 
-import com.example.hoinprinterlib.HoinPrinter;
-import com.example.hoinprinterlib.module.PrinterCallback;
-import com.example.hoinprinterlib.module.PrinterEvent;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import net.posprinter.posprinterface.ProcessData;
+import net.posprinter.posprinterface.UiExecute;
+import net.posprinter.utils.DataForSendToPrinterPos58;
+import net.posprinter.utils.DataForSendToPrinterPos80;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.sentry.Sentry;
 
@@ -24,85 +31,96 @@ public class JSBridge {
     }
 
     @JavascriptInterface
-    public void printTicket(String jsonStr) {
+    public void printTicket(final String jsonStr) {
         try {
             JSONObject ticket = new JSONObject(jsonStr);
 
-            String date, time, company_name, ticket_no, serving;
-            Integer customers;
-
-            date = ticket.getString("date");
-            time = ticket.getString("time");
-            company_name = ticket.getString("company_name");
-            ticket_no = ticket.getString("ticket_no");
-            serving = ticket.has("serving") ? ticket.getJSONObject("serving").getString("ticket_label") : null;
-            customers = ticket.getInt("customers");
+            final String date = ticket.getString("date");
+            final String time = ticket.getString("time");
+            final String company_name = ticket.getString("company_name");
+            final String ticket_no = ticket.getString("ticket_no");
+            final String serving = ticket.has("serving") ? ticket.getJSONObject("serving").getString("ticket_label") : null;
+            final int customers = ticket.getInt("customers");
 
             try {
-                HoinPrinter mHoinPrinter = HoinPrinter.getInstance(mContext, 2, new PrinterCallback() {
-                    @Override
-                    public void onState(int i) {
-                        String message = "";
+                if (MainActivity.isPrinterConnected) {
+                    MainActivity.binder.writeDataByYouself(
+                            new UiExecute() {
+                                @Override
+                                public void onsucess() {
 
-                        if (i == 6) {
-                            message = "Printer Connected";
-                        }
+                                }
 
-                        if (i == 7) {
-                            message = "Printer Disconnected";
-                        }
+                                @Override
+                                public void onfailed() {
+                                    Log.e("WRITE", "ERROR");
+                                }
+                            }, new ProcessData() {
+                                @Override
+                                public List<byte[]> processDataBeforeSend() {
+                                    List<byte[]> list = new ArrayList<byte[]>();
 
-                        Toast.makeText(mContext, message, Toast.LENGTH_LONG).show();
-                        Sentry.capture("PrinterCallback | onState: " + i);
-                    }
+                                    //creat a text ,and make it to byte[],
+                                    String str = company_name + "\n" + "Your Ticket Number" + "\n" + ticket_no + "\n" + "\n" + "Please be seated we will be attending to you shortly." + "\n" + "Latest Ticket Served: " + serving + "\n" + "Total Customer(s) waiting: " + customers + "\n" + "\n" + "\n" + date + "\t\t\t\t" + time;
+                                    list.add(DataForSendToPrinterPos58.initializePrinter());
 
-                    @Override
-                    public void onError(int i) {
-                        String message = "";
+                                    list.add(DataForSendToPrinterPos58.selectOrCancelBoldModel(1));
+                                    list.add(DataForSendToPrinterPos58.selectAlignment(1));
+                                    list.add(StringUtils.strTobytes(company_name.replace(" Philippines", "")));
+                                    list.add(DataForSendToPrinterPos58.printAndFeedLine());
 
-                        if (i == 1006) {
-                            message = "No USB Devices Found";
-                        }
+                                    list.add(DataForSendToPrinterPos58.selectAlignment(1));
+                                    list.add(StringUtils.strTobytes(company_name.replace("Development Bank of the ", "")));
+                                    list.add(DataForSendToPrinterPos58.printAndFeedLine());
 
-                        if (i == 1007) {
-                            message = "No USB Permission";
-                        }
+                                    list.add(DataForSendToPrinterPos58.selectOrCancelBoldModel(0));
+                                    list.add(DataForSendToPrinterPos58.selectAlignment(1));
+                                    list.add(StringUtils.strTobytes("\nYour Ticket Number"));
+                                    list.add(DataForSendToPrinterPos58.printAndFeedLine());
 
-                        Toast.makeText(mContext, message, Toast.LENGTH_LONG).show();
-                        Sentry.capture("PrinterCallback | onError: " + i);
-                    }
+                                    list.add(DataForSendToPrinterPos58.selectOrCancelBoldModel(1));
+                                    list.add(DataForSendToPrinterPos58.selectCharacterSize(7));
+                                    list.add(DataForSendToPrinterPos58.selectCharacterSize(7));
+                                    list.add(DataForSendToPrinterPos58.selectAlignment(1));
+                                    list.add(StringUtils.strTobytes("\n" + ticket_no));
+                                    list.add(DataForSendToPrinterPos58.printAndFeedLine());
 
-                    @Override
-                    public void onEvent(PrinterEvent printerEvent) {
-                        Sentry.capture("PrinterCallback | onEvent: " + printerEvent.toString());
-                    }
-                });
+                                    list.add(DataForSendToPrinterPos58.selectCharacterSize(4));
+                                    list.add(DataForSendToPrinterPos58.selectCharacterSize(0));
+                                    list.add(DataForSendToPrinterPos58.printAndFeedLine());
 
-                mHoinPrinter.connect(null);
-                mHoinPrinter.switchType(true);
-                mHoinPrinter.printText(company_name, false, false, true, true);
-                mHoinPrinter.printText("\n", false, false, false, true);
-                mHoinPrinter.printText("Your Ticket Number", false, false, false, true);
-                mHoinPrinter.printText("\n", false, false, false, true);
-                mHoinPrinter.printText(ticket_no, true, true, true, true);
-                mHoinPrinter.printText("\n", false, false, false, true);
-                mHoinPrinter.printText("\n", false, false, false, true);
-                mHoinPrinter.printText("Please be seated we will be attending to you shortly.", false, false, false, true);
-                mHoinPrinter.printText("\n", false, false, false, true);
+                                    list.add(DataForSendToPrinterPos58.selectOrCancelBoldModel(0));
+                                    list.add(DataForSendToPrinterPos58.selectOrCancelDoubelPrintModel(0));
+                                    list.add(DataForSendToPrinterPos58.selectAlignment(1));
+                                    list.add(StringUtils.strTobytes("Please be seated we will be\nattending to you shortly." + "\n"));
+                                    list.add(DataForSendToPrinterPos58.printAndFeedLine());
 
-                if (serving != null) {
-                    mHoinPrinter.printText("Latest Ticket Served: " + serving, false, false, false, true);
-                    mHoinPrinter.printText("\n", false, false, false, true);
+                                    if (serving != null) {
+                                        list.add(DataForSendToPrinterPos58.selectAlignment(1));
+                                        list.add(StringUtils.strTobytes("Latest Ticket Served: " + serving + "\n"));
+                                        list.add(DataForSendToPrinterPos58.printAndFeedLine());
+                                    }
+
+                                    if (customers > 0) {
+                                        list.add(DataForSendToPrinterPos58.selectAlignment(1));
+                                        list.add(StringUtils.strTobytes("Total Customer(s) waiting: " + customers + "\n"));
+                                        list.add(DataForSendToPrinterPos58.printAndFeedLine());
+                                    }
+
+                                    list.add(DataForSendToPrinterPos58.selectAlignment(1));
+                                    list.add(StringUtils.strTobytes("\n" + date + " --- " + time));
+                                    list.add(DataForSendToPrinterPos58.printAndFeedLine());
+                                    list.add(DataForSendToPrinterPos58.printAndFeedLine());
+                                    list.add(DataForSendToPrinterPos58.printAndFeedLine());
+                                    list.add(DataForSendToPrinterPos58.printAndFeedLine());
+                                    list.add(DataForSendToPrinterPos58.printAndFeedLine());
+                                    list.add(DataForSendToPrinterPos80.selectCutPagerModerAndCutPager(1));
+
+                                    return list;
+                                }
+                            });
+                } else {
                 }
-
-                if (customers != 0) {
-                    mHoinPrinter.printText("Total Customer(s) waiting: " + customers, false, false, false, true);
-                    mHoinPrinter.printText("\n", false, false, false, true);
-                }
-
-                mHoinPrinter.printText("\n", false, false, false, true);
-                mHoinPrinter.printText("\n", false, false, false, true);
-                mHoinPrinter.printText(date + "\t\t\t\t" + time, false, false, false, true);
             } catch (Exception e) {
                 Sentry.capture(e);
             }

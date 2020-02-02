@@ -13,7 +13,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -52,14 +51,6 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, PosprinterService.class);
         bindService(intent, conn, BIND_AUTO_CREATE);
-
-        Button mButton = new Button(getApplicationContext());
-        mButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
 
         initialize();
 

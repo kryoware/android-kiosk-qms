@@ -33,8 +33,8 @@ dependencies {
     implementation(name: 'posprinterconnectandsendsdk', ext: 'jar')
 
     // Logging
-    implementation 'io.sentry:sentry-android:1.7.27'
-    implementation 'org.slf4j:slf4j-nop:1.7.25'
+    // implementation 'io.sentry:sentry-android:1.7.27'
+    // implementation 'org.slf4j:slf4j-nop:1.7.25'
 }
 
-apply plugin: 'io.sentry.android.gradle'
+// apply plugin: 'io.sentry.android.gradle'

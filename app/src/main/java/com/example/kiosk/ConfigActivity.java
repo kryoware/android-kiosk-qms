@@ -134,7 +134,8 @@ public class ConfigActivity extends AppCompatActivity {
 
     private class CheckUrl extends AsyncTask<String, Void, Boolean> {
         @Override
-        protected void onPreExecute() {}
+        protected void onPreExecute() {
+        }
 
         @Override
         protected Boolean doInBackground(String... params) {
@@ -161,7 +162,7 @@ public class ConfigActivity extends AppCompatActivity {
                 saveConfig();
             } else {
                 configSaveBtn.setEnabled(true);
-                urlEditText.setError("Invalid URL");
+                urlEditText.setError("Could not connect to API");
             }
         }
     }

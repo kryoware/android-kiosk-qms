@@ -1,7 +1,6 @@
 package com.example.kiosk;
 
 import android.content.ComponentName;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -15,12 +14,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
-import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import net.posprinter.posprinterface.IMyBinder;
 import net.posprinter.posprinterface.UiExecute;
@@ -29,12 +24,9 @@ import net.posprinter.utils.PosPrinterDev;
 
 import java.util.List;
 
-import io.sentry.Sentry;
-import io.sentry.android.AndroidSentryClientFactory;
-
 public class MainActivity extends AppCompatActivity {
     public static IMyBinder binder;
-    public static PosPrinterDev.PortType portType;//connect type
+    public static PosPrinterDev.PortType portType;
     static boolean isPrinterConnected = false;
     ServiceConnection conn = new ServiceConnection() {
         @Override
@@ -80,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
         URL = apiUrl + "/modules/" + ui + ".php?v=" + apiVer + "&ak=" + apiKey;
 
-        Sentry.capture("URL: " + URL);
+//        Sentry.capture("URL: " + URL);
 
         if (getIsFirstStart()) {
             startActivity(new Intent(MainActivity.this, ConfigActivity.class));
@@ -116,7 +108,8 @@ public class MainActivity extends AppCompatActivity {
             });
             unbindService(conn);
         } catch (Exception e) {
-            Sentry.capture(e);
+            e.printStackTrace();
+//            Sentry.capture(e);
         }
     }
 
@@ -173,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initialize() {
-        Sentry.init("https://f77b18f2b95b4bc58046a4755b3a5b21@sentry.io/1955488", new AndroidSentryClientFactory(this));
+//        Sentry.init("https://f77b18f2b95b4bc58046a4755b3a5b21@sentry.io/1955488", new AndroidSentryClientFactory(this));
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         hideSystemUI();

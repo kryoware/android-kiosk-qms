@@ -24,10 +24,10 @@
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/urlEditText"
-            android:text="@string/url_default"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:inputType="textUri" />
+            android:inputType="textUri"
+            android:text="@string/url_default" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -47,9 +47,9 @@
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/uiEditText"
-            android:text="@string/ui_default"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:text="@string/ui_default" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -60,13 +60,13 @@
         android:layout_marginTop="0dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
+        android:hint="Version"
+        app:boxBackgroundColor="@android:color/transparent"
+        app:endIconMode="clear_text"
         app:layout_constraintBottom_toTopOf="@id/keyInputLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/uiInputLayout"
-        app:boxBackgroundColor="@android:color/transparent"
-        app:endIconMode="clear_text"
-        android:hint="Version">
+        app:layout_constraintTop_toBottomOf="@id/uiInputLayout">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/versionEditText"

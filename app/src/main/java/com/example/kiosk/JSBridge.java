@@ -1,12 +1,9 @@
 package com.example.kiosk;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
-
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import net.posprinter.posprinterface.ProcessData;
 import net.posprinter.posprinterface.UiExecute;
@@ -18,8 +15,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import io.sentry.Sentry;
 
 public class JSBridge {
     Context mContext;
@@ -79,14 +74,9 @@ public class JSBridge {
                                     list.add(DataForSendToPrinterPos58.printAndFeedLine());
 
                                     list.add(DataForSendToPrinterPos58.selectOrCancelBoldModel(1));
-                                    list.add(DataForSendToPrinterPos58.selectCharacterSize(7));
-                                    list.add(DataForSendToPrinterPos58.selectCharacterSize(7));
                                     list.add(DataForSendToPrinterPos58.selectAlignment(1));
                                     list.add(StringUtils.strTobytes("\n" + ticket_no));
                                     list.add(DataForSendToPrinterPos58.printAndFeedLine());
-
-                                    list.add(DataForSendToPrinterPos58.selectCharacterSize(4));
-                                    list.add(DataForSendToPrinterPos58.selectCharacterSize(0));
                                     list.add(DataForSendToPrinterPos58.printAndFeedLine());
 
                                     list.add(DataForSendToPrinterPos58.selectOrCancelBoldModel(0));
@@ -122,10 +112,12 @@ public class JSBridge {
                 } else {
                 }
             } catch (Exception e) {
-                Sentry.capture(e);
+                e.printStackTrace();
+//                Sentry.capture(e);
             }
         } catch (JSONException e) {
-            Sentry.capture(e);
+            e.printStackTrace();
+//            Sentry.capture(e);
         }
     }
 }

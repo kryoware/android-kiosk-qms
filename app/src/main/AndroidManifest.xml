@@ -23,8 +23,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ConfigActivity" android:excludeFromRecents="true" android:configChanges="orientation"></activity>
-        <activity android:name=".MainActivity" android:excludeFromRecents="true" android:configChanges="orientation">
+        <activity android:name=".ConfigActivity" android:excludeFromRecents="true" android:configChanges="orientation|screenSize"></activity>
+        <activity android:name=".MainActivity" android:excludeFromRecents="true" android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -1,4 +1,4 @@
-package com.example.kiosk;
+package ph.cleverqms.kiosk;
 
 import java.io.UnsupportedEncodingException;
 

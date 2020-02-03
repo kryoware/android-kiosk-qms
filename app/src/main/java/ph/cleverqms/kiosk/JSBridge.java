@@ -1,4 +1,4 @@
-package com.example.kiosk;
+package ph.cleverqms.kiosk;
 
 import android.content.Context;
 import android.util.Log;

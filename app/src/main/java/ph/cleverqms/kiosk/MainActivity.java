@@ -1,4 +1,4 @@
-package com.example.kiosk;
+package ph.cleverqms.kiosk;
 
 import android.content.ComponentName;
 import android.content.Intent;
@@ -7,8 +7,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.view.View;
-import android.view.WindowManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -31,18 +29,18 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             binder = (IMyBinder) iBinder;
-            Log.e("binder", "connected");
+            Log.d("PrinterService", "Connected");
             UsbPrinterConnect();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            Log.e("binder", "disconnected");
+            Log.d("PrinterService", "Disconnected");
         }
     };
     private String URL;
     private SharedPreferences sharedPreferences;
-    private WebView mWebView;
+    private Utils mUtils;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +50,8 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, PosprinterService.class);
         bindService(intent, conn, BIND_AUTO_CREATE);
 
-        initialize();
+        mUtils = new Utils(this);
+        mUtils.initialize();
 
         sharedPreferences = getBaseContext().getSharedPreferences("com.example.kiosk.PREFS", MODE_PRIVATE);
 
@@ -63,12 +62,9 @@ public class MainActivity extends AppCompatActivity {
 
         URL = apiUrl + "/modules/" + ui + ".php?v=" + apiVer + "&ak=" + apiKey;
 
-//        Sentry.capture("URL: " + URL);
-
         if (getIsFirstStart()) {
             startActivity(new Intent(MainActivity.this, ConfigActivity.class));
         } else {
-            Log.e("PREFS", sharedPreferences.getAll().toString());
             setUpWebView();
         }
     }
@@ -76,30 +72,31 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        initialize();
+        mUtils.initialize();
         setUpWebView();
+
+        Intent intent = new Intent(this, PosprinterService.class);
+        bindService(intent, conn, BIND_AUTO_CREATE);
+
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         try {
-//            if (binder != null) {
-//                binder.disconnectCurrentPort(new UiExecute() {
-//                    @Override
-//                    public void onsucess() {
-//
-//                    }
-//
-//                    @Override
-//                    public void onfailed() {
-//
-//                    }
-//                });
-//            }
-//            unbindService(conn);
-        } catch (Exception e) {
+            binder.disconnectCurrentPort(new UiExecute() {
+                @Override
+                public void onsucess() {
+                    Log.d("PrinterService", "Successfully Disconnected");
+                }
+
+                @Override
+                public void onfailed() {
+                    Log.d("PrinterService", "Failed to Disconnect");
+                }
+            });
+            unbindService(conn);
+        } catch (RuntimeException e) {
             e.printStackTrace();
         }
     }
@@ -133,7 +130,6 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        } else {
         }
     }
 
@@ -142,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setUpWebView() {
-        mWebView = findViewById(R.id.activity_main_webview);
+        WebView mWebView = findViewById(R.id.activity_main_webview);
 
         mWebView.setWebChromeClient(new WebChromeClient());
         mWebView.setWebViewClient(new WebViewClient());
@@ -152,35 +148,9 @@ public class MainActivity extends AppCompatActivity {
         mWebSettings.setJavaScriptEnabled(true);
         mWebSettings.setDisplayZoomControls(false);
         mWebSettings.setBuiltInZoomControls(false);
-//        mWebSettings.setAppCacheEnabled(false);
-//        mWebSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
         // Inject Bridge
         mWebView.addJavascriptInterface(new JSBridge(this, mWebView), "JSBridgePlugin");
         mWebView.loadUrl(URL);
-    }
-
-    private void initialize() {
-//        Sentry.init("https://f77b18f2b95b4bc58046a4755b3a5b21@sentry.io/1955488", new AndroidSentryClientFactory(this));
-
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        hideSystemUI();
-    }
-
-    private void hideSystemUI() {
-        // Enables regular immersive mode.
-        // For "lean back" mode, remove SYSTEM_UI_FLAG_IMMERSIVE.
-        // Or for "sticky immersive," replace it with SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-        View decorView = getWindow().getDecorView();
-        decorView.setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                        // Set the content to appear under the system bars so that the
-                        // content doesn't resize when the system bars hide and show.
-                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        // Hide the nav bar and status bar
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN);
     }
 }

@@ -13,7 +13,10 @@ import net.posprinter.utils.DataForSendToPrinterPos80;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class JSBridge {
@@ -30,8 +33,10 @@ public class JSBridge {
         try {
             JSONObject ticket = new JSONObject(jsonStr);
 
+            DateFormat df = new SimpleDateFormat("h:mm a");
+            final String time = df.format(Calendar.getInstance().getTime());
+
             final String date = ticket.getString("date");
-            final String time = ticket.getString("time");
             final String company_name = ticket.getString("company_name");
             final String ticket_no = ticket.getString("ticket_no");
             final String serving = ticket.has("serving") ? ticket.getJSONObject("serving").getString("ticket_label") : null;

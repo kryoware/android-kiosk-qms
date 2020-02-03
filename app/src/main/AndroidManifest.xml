@@ -25,8 +25,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ConfigActivity"></activity>
-        <activity android:name=".MainActivity">
+        <activity android:name=".ConfigActivity" android:excludeFromRecents="true"></activity>
+        <activity android:name=".MainActivity" android:excludeFromRecents="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

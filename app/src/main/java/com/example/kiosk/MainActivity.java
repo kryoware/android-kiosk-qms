@@ -77,8 +77,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        Log.e("MAIN", "IM BACK");
-        Log.e("PREFS", sharedPreferences.getAll().toString());
+        initialize();
         setUpWebView();
     }
 
@@ -86,22 +85,27 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         try {
-            binder.disconnectCurrentPort(new UiExecute() {
-                @Override
-                public void onsucess() {
-
-                }
-
-                @Override
-                public void onfailed() {
-
-                }
-            });
-            unbindService(conn);
+//            if (binder != null) {
+//                binder.disconnectCurrentPort(new UiExecute() {
+//                    @Override
+//                    public void onsucess() {
+//
+//                    }
+//
+//                    @Override
+//                    public void onfailed() {
+//
+//                    }
+//                });
+//            }
+//            unbindService(conn);
         } catch (Exception e) {
             e.printStackTrace();
-//            Sentry.capture(e);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
     }
 
     private void setPortType(PosPrinterDev.PortType portType) {
@@ -145,11 +149,11 @@ public class MainActivity extends AppCompatActivity {
 
         WebSettings mWebSettings = mWebView.getSettings();
 
-        mWebSettings.setDisplayZoomControls((false));
         mWebSettings.setJavaScriptEnabled(true);
+        mWebSettings.setDisplayZoomControls(false);
         mWebSettings.setBuiltInZoomControls(false);
-        mWebSettings.setAppCacheEnabled(false);
-        mWebSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+//        mWebSettings.setAppCacheEnabled(false);
+//        mWebSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
         // Inject Bridge
         mWebView.addJavascriptInterface(new JSBridge(this, mWebView), "JSBridgePlugin");

@@ -102,7 +102,7 @@ public class ConfigActivity extends AppCompatActivity {
                         ui = _ui;
                     }
 
-                    if (apiUrl.isEmpty() && apiKey.isEmpty() && apiVer.isEmpty() && ui.isEmpty()) {
+                    if (apiUrl.isEmpty() || apiKey.isEmpty() || apiVer.isEmpty() || ui.isEmpty()) {
                         Toast.makeText(getApplicationContext(), "Invalid config", Toast.LENGTH_LONG).show();
                     } else {
                         configSaveBtn.setEnabled(false);
@@ -132,7 +132,7 @@ public class ConfigActivity extends AppCompatActivity {
     }
 
 
-    private class CheckUrl extends AsyncTask<String, Void, Boolean> {
+    public class CheckUrl extends AsyncTask<String, Void, Boolean> {
         @Override
         protected void onPreExecute() {
         }
